@@ -180,6 +180,16 @@ Durante las pruebas fue posible observar pequeñas perturbaciones temporales en 
 
 Los glitches son más probables durante transiciones donde múltiples bits cambian simultáneamente, especialmente en cambios cercanos al desbordamiento del contador. Debido a que estas perturbaciones son extremadamente cortas, resultan difíciles de detectar y requieren herramientas de captura rápida o visualización analógica para ser observadas correctamente.
 
+### Capturas del Osciloscopio 
+<img width="800" height="423" alt="invert-image" src="https://github.com/user-attachments/assets/4b493053-7cda-49fa-b901-336f0206334b" />
+<br>
+<img width="800" height="421" alt="invert-image (1)" src="https://github.com/user-attachments/assets/88d664f4-259b-4f51-9426-2045768f1215" />
+<br>
+<img width="800" height="425" alt="invert-image (2)" src="https://github.com/user-attachments/assets/f7b5f2e7-ad58-46d5-af8e-d4b93c3b8b3f" />
+<br>
+<img width="800" height="425" alt="invert-image (3)" src="https://github.com/user-attachments/assets/b358dcde-e92f-44c2-bb41-4056e3e85873" />
+<br>
+
 ### Conclusiones del ejercicio
 
 La práctica permitió comprender el funcionamiento de los contadores síncronos y el mecanismo de propagación de acarreo utilizado para conectar múltiples dispositivos en cascada. Además, se analizaron fenómenos reales asociados a retardos de propagación y glitches temporales presentes en circuitos digitales físicos.
@@ -188,4 +198,108 @@ El uso del osciloscopio como analizador lógico permitió verificar experimental
 
 
 ## 10.2 Construcción de un cerrojo Set-Reset con compuertas NAND
+
+Para este ejercicio se construyó un cerrojo SR sincronizado utilizando compuertas NAND del circuito integrado 74HC00, siguiendo el esquema propuesto en la guía del proyecto. La señal de reloj fue generada desde la FPGA TangNano, ajustando la frecuencia lo más cercana posible a la especificada en la figura de referencia.
+
+El funcionamiento del circuito fue verificado utilizando el osciloscopio y el analizador lógico, observando el comportamiento de las señales de entrada y las salidas complementarias Q y Q̅.
+
+### Funcionamiento general del cerrojo SR
+
+El cerrojo SR (*Set-Reset Latch*) es un dispositivo secuencial capaz de almacenar un bit de información. El circuito implementado utiliza compuertas NAND realimentadas para mantener el estado almacenado incluso después de retirar las señales de entrada.
+
+En esta implementación, las entradas **S** y **R** se encuentran sincronizadas mediante una señal de reloj. Esto significa que los cambios en las salidas solamente ocurren cuando la señal de reloj se encuentra en nivel alto. Cuando el reloj está en bajo, el circuito conserva el estado previamente almacenado.
+
+#### Diagrama del circuito 
+<img width="537" height="425" alt="image" src="https://github.com/user-attachments/assets/455c39c5-e26a-411d-9bf1-59c6555e78f6" />
+
+#### Circuito utilizado 
+<img width="1894" height="1521" alt="CerrojoSetResetCircuito" src="https://github.com/user-attachments/assets/2bf3e2a5-0fb1-4c62-8377-f4f4369dc99a" />
+
+### Funcionamiento durante la operación Set
+
+Durante la operación **Set**, la entrada correspondiente activa el almacenamiento de un valor lógico alto en la salida Q.
+
+Al aplicarse la condición de Set con el reloj en nivel alto:
+
+- La salida Q pasa a nivel alto.
+- La salida Q̅ pasa a nivel bajo.
+
+Este estado permanece almacenado incluso después de retirar la señal de entrada, mientras no se ejecute una operación de Reset.
+
+### Funcionamiento durante la operación Reset
+
+Durante la operación **Reset**, la salida almacenada se limpia y el circuito cambia al estado opuesto.
+
+Al aplicarse la condición de Reset con el reloj en nivel alto:
+
+- La salida Q pasa a nivel bajo.
+- La salida Q̅ pasa a nivel alto.
+
+De igual manera, el estado permanece almacenado hasta que una nueva operación modifique el contenido del cerrojo.
+
+### Influencia de la señal de reloj
+
+Debido a que el circuito se encuentra sincronizado mediante reloj, las entradas S y R solamente afectan las salidas cuando el reloj está en nivel alto.
+
+Cuando el reloj permanece en bajo:
+
+- El circuito ignora cambios en las entradas.
+- El estado previamente almacenado se conserva.
+- Las salidas mantienen su valor anterior.
+
+Este comportamiento permite controlar el instante exacto en el que el sistema acepta modificaciones, evitando cambios no deseados en las salidas.
+
+### ¿Qué ocurre cuando S y R se mantienen activas simultáneamente?
+
+Cuando ambas entradas se activan simultáneamente, el circuito entra en una condición no válida o indeterminada.
+
+En un cerrojo SR implementado con NAND, esta situación provoca que ambas salidas intenten tomar el mismo valor lógico, rompiendo la condición de complementariedad entre Q y Q̅. 
+
+Además, al liberar simultáneamente ambas entradas, el estado final del circuito puede depender de pequeñas diferencias de tiempo de propagación internas, generando un comportamiento impredecible o incluso condiciones metaestables.
+
+Por esta razón, esta combinación de entradas debe evitarse durante el funcionamiento normal del circuito.
+
+### Tabla de verdad del cerrojo SR 
+
+| CLK | S | R | Q(next) | Q̅(next) | Estado |
+|:---:|:---:|:---:|:---:|:---:|---|
+| 0 | X | X | Q(prev) | Q̅(prev) | Mantiene el estado anterior |
+| 1 | 0 | 0 | Q(prev) | Q̅(prev) | Mantiene el estado anterior |
+| 1 | 1 | 0 | 1 | 0 | Set |
+| 1 | 0 | 1 | 0 | 1 | Reset |
+| 1 | 1 | 1 | Indeterminado | Indeterminado | Estado no válido |
+
+### Descripción del circuito implementado
+
+El circuito final se construyó utilizando compuertas NAND del integrado 74HC00. Dos compuertas se utilizaron para sincronizar las entradas S y R con la señal de reloj, mientras que las otras dos compuertas conformaron el lazo de realimentación encargado de almacenar el estado lógico.
+
+La realimentación entre compuertas permite que el circuito mantenga el valor almacenado aun cuando las entradas regresan a estado inactivo.
+
+### Utilidad del cerrojo SR
+
+El cerrojo SR constituye uno de los elementos fundamentales de los sistemas secuenciales digitales. Su principal utilidad consiste en almacenar información binaria de manera temporal.
+
+Este tipo de circuito sirve como base para estructuras más complejas como:
+
+- Flip-flops.
+- Registros.
+- Memorias digitales.
+- Máquinas de estados.
+- Sistemas de sincronización.
+
+Además, permite comprender conceptos fundamentales relacionados con almacenamiento de datos, realimentación y sincronización en circuitos digitales.
+
+### Capturas del Osciloscopio
+
+<img width="800" height="426" alt="invert-image (4)" src="https://github.com/user-attachments/assets/8ed85a32-962a-4948-b87a-107e5493b51b" />
+<br>
+<img width="800" height="422" alt="invert-image (5)" src="https://github.com/user-attachments/assets/f9e4b308-4daf-4d45-ac5a-26a7521b5465" />
+<br>
+
+### Conclusiones del ejercicio
+
+La práctica permitió comprender el funcionamiento interno de un circuito secuencial básico construido a partir de compuertas lógicas discretas. Se verificó experimentalmente la capacidad del cerrojo SR para almacenar información binaria y mantener su estado mediante realimentación.
+
+Asimismo, se observó la importancia de la sincronización mediante reloj y las limitaciones asociadas a condiciones inválidas de entrada, especialmente en sistemas digitales reales donde existen retardos de propagación y posibles fenómenos de metaestabilidad.
+
 
