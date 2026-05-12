@@ -113,7 +113,7 @@ Debido a que varios displays comparten líneas de segmentos, se utiliza una téc
 
 ## 10.1 Contadores sincrónicos
 
-Para este ejercicio se utilizaron dos contadores síncronos **74HCT163** conectados en cascada, siguiendo el circuito indicado en la guía del proyecto. Inicialmente se intentó utilizar el modelo 74LS163 indicado en el enunciado; sin embargo, fue necesario reemplazarlo por el 74HCT163 debido a la disponibilidad del otro modelo en las tiendas de electrónica.
+Para este ejercicio se utilizaron dos contadores síncronos **74HCT163** conectados en cascada, siguiendo el circuito indicado en la guía del proyecto. Inicialmente se intentó utilizar el modelo 74LS163 indicado en el enunciado; sin embargo, fue necesario reemplazarlo por el 74HCT163 debido a que el otro modelo no se encontraba disponible en las tiendas de electrónica.
 
 La señal de reloj fue generada desde la FPGA, ajustando la frecuencia lo más cercana posible a la especificada en la guía. El funcionamiento del sistema fue verificado utilizando el osciloscopio Keysight DSO-X2002A en modo analizador lógico, observando las señales de salida de ambos contadores y la propagación del acarreo entre ellos.
 
