@@ -187,6 +187,13 @@ principal del sistema. Opera de forma combinacional: cambia la salida en el mism
 ---
 
 # 5. Diagramas de estado de todas las FSM diseñadas
+
+#### FSM Escaneo de Columnas: estado 0, 1, 2
+
+<img width="345" height="254" alt="fsmb1 drawio" src="https://github.com/user-attachments/assets/f7d02650-e617-45d9-aa99-e2b8d3e79cfd" />
+
+#### Máquina de Estados General
+
 <br>
 <img width="570" height="501" alt="FSM drawio" src="https://github.com/user-attachments/assets/64532e77-40c4-440e-9972-d645b0cb2cfb" />
 <br>
