@@ -87,6 +87,16 @@ Debido a que varios displays comparten líneas de segmentos, se utiliza una téc
 
 # 4. Diagramas de bloques de cada subsistema y su funcionamiento fundamental
 
+## Subsistema de lectura del teclado hexadecimal
+
+
+## Subsistema de suma aritmética
+<br>
+<img width="770" height="407" alt="DiagramaSumador drawio" src="https://github.com/user-attachments/assets/9f53eb4c-fadc-4673-8204-e0e939e8dc97" />
+<br>
+
+## Subsistema de despliegue en 7 segmentos
+
 ---
 
 # 5. Diagramas de estado de todas las FSM diseñadas
