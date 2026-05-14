@@ -95,11 +95,90 @@ Debido a que varios displays comparten líneas de segmentos, se utiliza una téc
 <img width="770" height="407" alt="DiagramaSumador drawio" src="https://github.com/user-attachments/assets/9f53eb4c-fadc-4673-8204-e0e939e8dc97" />
 <br>
 
+#### Descripción funcional
+**Entradas BCD:** Punto de entrada del subsistema. Recibe seis señales de 4 bits: los dígitos de centenas, decenas y unidades
+de cada uno de los dos operandos que vienen del Subsistema 1 (teclado).
+
+**Conversor decimal:** Transforma los tres dígitos separados en un número entero binario puro usando la fórmula posicional decimal.
+Opera de forma combinacional: no necesita reloj, produce el resultado en el mismo ciclo.
+
+**Sumador registrado:** Calcula resultado = num1 + num2 y lo almacena en un registro síncrono cuando start_sum=1. Activa done=1
+para indicar al Subsistema 3 que el resultado ya está listo. El reset pone todo a cero.
+
+
 ## Subsistema de despliegue en 7 segmentos
+
+### Módulo bin2bcd
+<br>
+<img width="872" height="251" alt="Digramabin2bcd drawio" src="https://github.com/user-attachments/assets/d41cc15a-fb2c-486d-9607-f62e324a4aa2" />
+<br>
+
+#### Descripción funcional 
+**Entrada binaria:** Punto de entrada del módulo. Recibe el resultado de la suma (proveniente del Subsistema 2) como un número
+binario puro de 12 bits, con rango de 0 a 4095. En este proyecto el valor máximo esperado es 1998.
+
+**Registro de desplazamiento:** Parte del algoritmo Double Dabble. Desplaza el número binario un bit a la izquierda en cada iteración,
+alimentando los cuatro acumuladores BCD (miles, centenas, decenas, unidades) de a un bit por vuelta.
+
+**Ajuste BCD (+3):** Antes de cada desplazamiento revisa si algún acumulador llegó a 5 o más. Si es así, le suma 3 para que
+al desplazarse no desborde el dígito decimal. Esta corrección es la clave del algoritmo Double Dabble.
+
+**Salidas BCD:** Al terminar las 12 iteraciones, cada acumulador contiene un dígito decimal (0–9) en formato BCD de 4 bits,
+listo para conectarse directamente al decodificador BCD→7 segmentos del Subsistema 3.
+
+
+### Módulo disp_decoder
+<br>
+<img width="792" height="144" alt="DiagramaDeco drawio" src="https://github.com/user-attachments/assets/5a948aa0-4b37-40fe-aa03-2b2690648563" />
+<br>
+
+#### Descripción funcional
+**Entrada BCD:** Recibe un dígito decimal entre 0 y 9 en formato BCD de 4 bits,
+proveniente de las salidas del módulo bin2bcd.
+
+**Tabla de decodificación:** Mediante un case combinacional, convierte cada dígito en el
+patrón de 7 bits que indica qué segmentos del display deben encenderse. Un 1 enciende el segmento, un 0 lo apaga.
+Si el valor no es 0–9, apaga todos los segmentos (default).
+
+**Patrón de segmentos:** Entrega los 7 bits de control (seg[6:0] = a b c d e f g) directamente a los pines del display de 7 segmentos en la protoboard.
+
+
+### Módulo disp_mux
+<br>
+<img width="640" height="331" alt="DiagramaMux drawio" src="https://github.com/user-attachments/assets/e3fc42db-8457-44f9-928b-52cd220efe8c" />
+<br>
+
+#### Descripción funcional
+**Entradas de dígitos:** Recibe los cuatro dígitos BCD (uno por display) desde el módulo bin2bcd: unidades, decenas, centenas y miles.
+
+**Divisor de frecuencia:** Contador de 16 bits que reduce el reloj de 27 MHz. Los bits [14:13] cambian a ~206 Hz, suficiente para que
+el ojo perciba los cuatro displays encendidos al mismo tiempo gracias a la persistencia visual.
+
+**Multiplexor 4:1** **:** En cada ciclo selecciona un display y envía su dígito a hex_out (hacia disp_decoder) y activa su ánodo
+en digit (one-hot). Los cuatro displays se alternan tan rápido que parecen encendidos simultáneamente.
+
+
+### Módulo display_selector
+<br>
+<img width="561" height="251" alt="DiagramaDispSelector drawio" src="https://github.com/user-attachments/assets/10d2b2bf-a3a0-452d-a04b-479f21526f8d" />
+<br>
+
+#### Descripción funcional
+**Fuentes de datos (Número 1, Número 2, Resultado):** Las tres fuentes posibles que pueden mostrarse en el display. Número 1 y Número 2 tienen 3 dígitos cada uno
+(el display de miles se apaga con 0). El resultado tiene 4 dígitos para cubrir el rango hasta 1998.
+
+**Selector de pantalla:** Decide cuál de las tres fuentes se muestra en los displays según el valor de state, que viene de la FSM
+principal del sistema. Opera de forma combinacional: cambia la salida en el mismo ciclo que cambia state.
+
+**Salidas al MUX:** Entrega los cuatro dígitos seleccionados a disp_mux, que se encarga de multiplexarlos en el tiempo.
+
 
 ---
 
 # 5. Diagramas de estado de todas las FSM diseñadas
+<br>
+<img width="570" height="501" alt="FSM drawio" src="https://github.com/user-attachments/assets/64532e77-40c4-440e-9972-d645b0cb2cfb" />
+<br>
 
 ---
 
