@@ -89,6 +89,17 @@ Debido a que varios displays comparten líneas de segmentos, se utiliza una téc
 
 ## Subsistema de lectura del teclado hexadecimal
 
+<img width="550" height="136" alt="Untitled Diagram drawio (2)" src="https://github.com/user-attachments/assets/5b921bfa-bc2e-4f22-bfbf-c7819a3e7a93" />
+
+#### Descripción funcional
+
+**Lector de teclado matricial:** Punto de entrada del subsistema de captura de datos. Recibe las señales de filas provenientes del teclado matricial 4x3 y utiliza un divisor de frecuencia interno para reducir la velocidad de exploración y estabilizar la lectura.
+
+**Módulo de escaneo:** Activa secuencialmente cada una de las columnas del teclado mediante una máquina de estados síncrona. El recorrido de columnas permite identificar la posición exacta de la tecla presionada combinando la columna activa con la fila detectada.
+
+**Lógica de decodificación:** Interpreta la combinación fila-columna y traduce la tecla presionada a un valor hexadecimal de 4 bits. Además, genera una señal de validación (`tecla_raw`) que indica cuándo existe una pulsación activa en el teclado.
+
+
 
 ## Subsistema de suma aritmética
 <br>
