@@ -201,18 +201,134 @@ principal del sistema. Opera de forma combinacional: cambia la salida en el mism
 ---
 
 # 6. Ejemplo y análisis de una simulación funcional del sistema completo.
+El testbench realizado se puede observar en [Testbench](disenologico-Proy2/Proyecto2/src/sim/top_tb.vs)
+
+La simulación funcional del sistema completo se realizó utilizando un testbench que integró todos los módulos del diseño de la calculadora en FPGA, incluyendo el teclado matricial, la FSM de control, el sumador binario, el conversor bin2bcd y el sistema de display multiplexado. Se aplicó un reloj de 10 MHz y un reset inicial controlado, lo que permitió observar una inicialización estable del sistema sin comportamientos erráticos.
+
+Durante las pruebas con las operaciones 9+1, 8+7 y 5+5, el sistema respondió correctamente a las secuencias de entrada simuladas mediante el task press_key. Se verificó que la FSM detecta adecuadamente las teclas válidas, almacena correctamente los operandos y transiciona de estado sin duplicaciones ni errores de sincronización, gracias al uso del módulo antirrebote.
+
+Finalmente, el sistema de suma y conversión a BCD funcionó de manera consistente, entregando resultados correctos en el display de 7 segmentos sin valores inválidos. La multiplexación del display se mantuvo estable durante toda la simulación, confirmando que la integración general del sistema es funcional y coherente a nivel de hardware digital.
 
 ---
 
 # 7. Análisis de consumo de recursos en la FPGA (LUTs, FFs, etc.) y del consumo de potencia que reporta las herramientas.
 
+**Info: Device utilisation:**
+
+    Info: 	                 VCC:     1/    1   100%
+    
+    Info: 	               SLICE:  1303/ 8640    15%
+    
+    Info: 	                 IOB:    20/  274     7%
+    
+    Info: 	                ODDR:     0/  274     0%
+    
+    Info: 	           MUX2_LUT5:   286/ 4320     6%
+    
+    Info: 	           MUX2_LUT6:   132/ 2160     6%
+    
+    Info: 	           MUX2_LUT7:    46/ 1080     4%
+    
+    Info: 	           MUX2_LUT8:    16/ 1056     1%
+    
+    Info: 	                 GND:     1/    1   100%
+    
+    Info: 	                RAMW:     0/  270     0%
+    
+    Info: 	                 GSR:     1/    1   100%
+    
+    Info: 	                 OSC:     0/    1     0%
+    
+    Info: 	                rPLL:     0/    2     0%
+
+---
+**=== top ===**
+
+     Number of wires:               1388
+     
+     Number of wire bits:           2972
+     
+     Number of public wires:        1388
+     
+     Number of public wire bits:    2972
+     
+     Number of memories:               0
+     
+     Number of memory bits:            0
+     
+     Number of processes:              0
+     
+     Number of cells:               1683
+     
+       ALU                           304
+       
+       DFF                             7
+       
+       DFFE                            1
+       
+       DFFR                           41
+       
+       DFFRE                          52
+       
+       GND                             1
+       
+       IBUF                            6
+       
+       LUT1                          472
+       
+       LUT2                          116
+       
+       LUT3                           45
+       
+       LUT4                          143
+       
+       MUX2_LUT5                     286
+       
+       MUX2_LUT6                     132
+       
+       MUX2_LUT7                      46
+       
+       MUX2_LUT8                      16
+       
+       OBUF                           14
+       
+       VCC                             1
+
+
 ---
 
 # 8. Reporte de velocidades máximas de reloj posibles en el diseño
 
+A partir de la arquitectura implementada en el proyecto, la velocidad máxima de reloj está limitada principalmente por la ruta crítica entre la actualización de estados de la FSM, la operación de suma y el proceso de conversión binario a BCD.
+
+En el diseño, el bloque más restrictivo corresponde al conversor `bin2bcd`, ya que el algoritmo tipo Double Dabble introduce múltiples etapas secuenciales de comparación, desplazamiento y ajuste de dígitos BCD dentro de un mismo ciclo combinacional. Esto incrementa significativamente el retardo de propagación respecto a los demás módulos. En segundo lugar, el sumador binario de 8–12 bits y la lógica de multiplexado del display también contribuyen al retardo, aunque en menor medida.
+
+
 ---
 
 # 9. Análisis de principales problemas hallados durante el trabajo y de las soluciones aplicadas.
+
+## 1. Conversión incorrecta de binario a BCD
+
+Se presentó un error en el módulo `bin2bcd` donde resultados de operaciones como 9 + 1 y 9 + 2 mostraban valores inválidos en el display (A, B) en lugar de realizar el acarreo correcto a decenas. El problema provenía de una implementación incompleta del algoritmo Double Dabble y de desajustes en los registros y desplazamientos internos. Este problema aún persiste, estamos acotando el comportamiento para identificar la causa raíz.
+
+---
+
+## 2. Problemas de sincronización entre módulos
+
+Se detectó desincronización entre la FSM principal, el almacenamiento de datos y la lectura del teclado, lo que provocaba cargas duplicadas de dígitos o cambios prematuros de estado. Esto se debió principalmente a rebotes en las teclas y falta de sincronización con el reloj del sistema. La solución consistió en incorporar un módulo antirrebote y ajustar la FSM para aceptar datos únicamente cuando `tecla_valida` se mantuviera estable por varios ciclos de reloj, separando correctamente la lógica combinacional de la secuencial.
+
+---
+
+## 3. Errores en la lectura del teclado matricial
+
+Durante la integración del teclado 4x4 se observaron lecturas incorrectas y múltiples activaciones de algunas teclas debido a tiempos de muestreo inadecuados y errores en el mapeo de filas y columnas. Para solucionarlo, se rediseñó el escaneo mediante una FSM dedicada que activa columnas de forma secuencial y lee filas de manera sincronizada, además de añadir retardos controlados y verificar el cableado físico para asegurar coherencia con el diseño HDL.
+
+---
+
+## 4. Problemas de visualización en el display de 7 segmentos
+
+En las pruebas físicas el display multiplexado no mostraba correctamente la información o permanecía apagado, a pesar de funcionar en simulación. Esto se debió a errores en los constraints de pines, polaridad incorrecta del display (ánodo/cátodo común) y una mala configuración de los transistores de activación de dígitos. La solución fue corregir la asignación de pines, ajustar la lógica de activación según la polaridad real del hardware y validar la salida con instrumentos de medición como osciloscopio y multímetro.
 
 ---
 
