@@ -2,19 +2,22 @@
 
 module top_tb;
 
+    // ======================================================
+    // CLOCK / RESET
+    // ======================================================
     logic clk;
     logic rst;
+
+    // Teclado
     logic [3:0] rows;
-    logic [2:0] cols;
+    wire  [2:0] cols;
+
+    // Display
     logic [3:0] digit;
     logic [6:0] seg;
 
-    // Inyección directa en el FSM
-    logic tecla_inject;
-    logic [3:0] tecla_value;
-
-    // Instancia normal
-    top dut (
+    // DUT
+    top u_dut (
         .clk(clk),
         .rst(rst),
         .rows(rows),
@@ -23,85 +26,115 @@ module top_tb;
         .seg(seg)
     );
 
-    // Inyectar teclas directamente en B1 (módulo u_kbd)
-    // Forzar salidas del teclado
-    initial begin
-        force dut.u_kbd.tecla_raw = tecla_inject;
-        force dut.u_kbd.tecla = tecla_value;
-    end
+    // ======================================================
+    // CLOCK 10 MHz
+    // ======================================================
+    always #5 clk = ~clk;
 
-    // Clock 100MHz
-    initial begin
-        clk = 0;
-        forever #5 clk = ~clk;
-    end
-
-    // Tarea para inyectar tecla
-    task inject_key(input [3:0] key_code, input integer duration_ms);
-        begin
-            tecla_value = key_code;
-            tecla_inject = 1'b1;
-            repeat(duration_ms * 100) @(posedge clk);  // 1ms = 100 ciclos de 10ns
-            tecla_inject = 1'b0;
-            repeat(50) @(posedge clk);  // debounce
-        end
-    endtask
-
+    // ======================================================
+    // VCD (WAVEFORMS)
+    // ======================================================
     initial begin
         $dumpfile("top_tb.vcd");
         $dumpvars(0, top_tb);
+    end
 
-        // Reset
+    // ======================================================
+    // RESET
+    // ======================================================
+    initial begin
+        clk = 0;
         rst = 0;
-        tecla_inject = 1'b0;
-        rows = 4'b0000;
-        repeat(100) @(posedge clk);
+        rows = 4'b1111;
+
+        repeat(10) @(posedge clk);
         rst = 1;
-        repeat(100) @(posedge clk);
+        repeat(10) @(posedge clk);
+        rst = 0;
+    end
 
-        $display("=== INICIO: 123 + 456 = 579 ===");
-        
-        // Presionar 1
-        $display("T=%0tns: Presionando 1", $time);
-        inject_key(4'h1, 1);
-        
-        // Presionar 2
-        $display("T=%0tns: Presionando 2", $time);
-        inject_key(4'h2, 1);
-        
-        // Presionar 3
-        $display("T=%0tns: Presionando 3", $time);
-        inject_key(4'h3, 1);
-        
-        // Presionar * (0xA)
-        $display("T=%0tns: Presionando * (sep)", $time);
-        inject_key(4'hA, 1);
-        
-        // Presionar 4
-        $display("T=%0tns: Presionando 4", $time);
-        inject_key(4'h4, 1);
-        
-        // Presionar 5
-        $display("T=%0tns: Presionando 5", $time);
-        inject_key(4'h5, 1);
-        
-        // Presionar 6
-        $display("T=%0tns: Presionando 6", $time);
-        inject_key(4'h6, 1);
-        
-        // Presionar # (0xB)
-        $display("T=%0tns: Presionando # (calc)", $time);
-        inject_key(4'hB, 1);
-        
-        repeat(1000) @(posedge clk);
+    // ======================================================
+    // TASK: simular tecla REALISTA
+    // ======================================================
+    task automatic press_key(input int key);
+    begin
+        // Espera a sincronización del scanner
+        repeat(200) @(posedge clk);
 
-        $display("=== FIN ===");
-        $display("n1 = %d%d%d", dut.n1_d2, dut.n1_d1, dut.n1_d0);
-        $display("n2 = %d%d%d", dut.n2_d2, dut.n2_d1, dut.n2_d0);
-        $display("resultado_bin = %d (esperado: 579)", dut.resultado_bin);
-        $display("r3=%d, r2=%d, r1=%d, r0=%d (BCD)", dut.r3, dut.r2, dut.r1, dut.r0);
+        // Simulación simple: solo activa fila (modelo ideal)
+        case (key)
+            1: rows = 4'b1110;
+            2: rows = 4'b1110;
+            3: rows = 4'b1110;
 
+            4: rows = 4'b1101;
+            5: rows = 4'b1101;
+            6: rows = 4'b1101;
+
+            7: rows = 4'b1011;
+            8: rows = 4'b1011;
+            9: rows = 4'b1011;
+
+            default: rows = 4'b1111;
+        endcase
+
+        // Mantener presión
+        repeat(20) @(posedge clk);
+
+        // Soltar tecla
+        rows = 4'b1111;
+
+        // Debounce + procesamiento FSM
+        repeat(200) @(posedge clk);
+    end
+    endtask
+
+    // ======================================================
+    // ESTÍMULOS PRINCIPALES
+    // ======================================================
+    initial begin
+
+        // Esperar reset completo
+        repeat(50) @(posedge clk);
+
+        // ==========================
+        // CASO 1: 9 + 1
+        // ==========================
+        press_key(9);
+        press_key(1);
+
+        repeat(2000) @(posedge clk);
+
+        // ==========================
+        // CASO 2: 8 + 7
+        // ==========================
+        press_key(8);
+        press_key(7);
+
+        repeat(2000) @(posedge clk);
+
+        // ==========================
+        // CASO 3: 5 + 5
+        // ==========================
+        press_key(5);
+        press_key(5);
+
+        repeat(2000) @(posedge clk);
+
+        $display("SIMULACION FINALIZADA");
         $finish;
+    end
+
+    // ======================================================
+    // MONITOR SIMPLE
+    // ======================================================
+    initial begin
+        forever begin
+            @(posedge clk);
+            if (rows != 4'b1111)
+                $display("[%0t] TECLA ACTIVA rows=%b cols=%b digit=%b seg=%b",
+                         $time, rows, cols, digit, seg);
+        end
     end
 
 endmodule

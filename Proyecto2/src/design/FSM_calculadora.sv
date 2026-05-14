@@ -56,8 +56,7 @@ always_comb begin
         // IDLE
         // =========================
         IDLE: begin
-            if (tecla_valida && tecla < 4'hA)  // 0-9 son 0x0-0x9
-                next_state = NUM1;
+            next_state = NUM1;
         end
 
         // =========================
@@ -98,7 +97,7 @@ always_comb begin
             // Volver a IDLE con * o con cualquier nueva tecla numérica
             if (tecla_valida) begin
                 if (tecla < 4'hA)  // Tecla numérica: reinicia
-                    next_state = IDLE;
+                    next_state = state;
             end
         end
 

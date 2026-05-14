@@ -1,4 +1,6 @@
-module B1_lector_teclado (
+module B1_lector_teclado #(
+    parameter int MAX_COUNT = 100000
+)(
     input  logic       clk,
     input  logic [3:0] rows,
 
@@ -18,16 +20,27 @@ module B1_lector_teclado (
     // ================================
     always_ff @(posedge clk) begin
 
-        contador <= contador + 1'b1;
+        // congelar scanner mientras haya tecla
+        if (!tecla_raw) begin
 
-        if (contador >= 25'd100_000) begin
+            contador <= contador + 1'b1;
 
+            if (contador >= MAX_COUNT) begin
+
+                contador <= '0;
+
+                if (estado == 2)
+                    estado <= 0;
+                else
+                    estado <= estado + 1'b1;
+
+            end
+
+        end
+        else begin
+
+            // opcional pero recomendado
             contador <= '0;
-
-            if (estado == 2)
-                estado <= 0;
-            else
-                estado <= estado + 1'b1;
 
         end
 

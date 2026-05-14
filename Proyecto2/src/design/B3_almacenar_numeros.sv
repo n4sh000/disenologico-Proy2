@@ -41,7 +41,7 @@ module B3_almacenar_numeros (
             d0_2 <= 0; d1_2 <= 0; d2_2 <= 0;
         end
 
-        else if (load_digit && tecla_pulse && (tecla <= 4'd9)) begin
+        else if (load_digit && tecla_pulse && ((tecla != 4'hA) && (tecla != 4'hB))) begin
 
             // =====================
             // NUMERO 1

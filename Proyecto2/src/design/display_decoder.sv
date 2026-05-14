@@ -17,6 +17,12 @@ module  disp_decoder(
             4'h7: seg = 7'b1110000;
             4'h8: seg = 7'b1111111;
             4'h9: seg = 7'b1111011;
+            4'hA: seg = 7'b1110111; // "A"
+            4'hB: seg = 7'b0011111; // "b"
+            4'hC: seg = 7'b1001110; // "C"
+            4'hD: seg = 7'b0111101; // "d"
+            4'hE: seg = 7'b1001111; // "E"
+            4'hF: seg = 7'b1000111; // "F"
             default: seg = 7'b0000000;
             endcase
        end 

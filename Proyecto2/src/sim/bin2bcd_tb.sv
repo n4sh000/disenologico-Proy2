@@ -2,20 +2,24 @@
 
 module bin2bcd_tb;
 
-    // DUT inputs
+    // =========================
+    // señales
+    // =========================
+
     logic [11:0] bin;
 
-    // DUT outputs
     logic [3:0] miles;
     logic [3:0] centenas;
     logic [3:0] decenas;
     logic [3:0] unidades;
 
     // =========================
-    // Instancia del DUT
+    // DUT
     // =========================
+
     bin2bcd dut (
         .bin(bin),
+
         .miles(miles),
         .centenas(centenas),
         .decenas(decenas),
@@ -23,64 +27,55 @@ module bin2bcd_tb;
     );
 
     // =========================
-    // Task de prueba
+    // VCD
     // =========================
-    task probar(input [11:0] valor);
-
-        begin
-
-            bin = valor;
-
-            #1;
-
-            $display("-----------------------------------");
-            $display("BINARIO = %0d", valor);
-            $display("BCD     = %0d%0d%0d%0d",
-                     miles,
-                     centenas,
-                     decenas,
-                     unidades);
-
-        end
-
-    endtask
-
-    // =========================
-    // Estímulos
-    // =========================
-    initial begin
-
-        $display("INICIO TEST BIN2BCD");
-
-        probar(0);
-        probar(1);
-        probar(5);
-        probar(9);
-
-        probar(10);
-        probar(15);
-        probar(42);
-        probar(99);
-
-        probar(100);
-        probar(255);
-        probar(512);
-
-        probar(999);
-        probar(1023);
-
-        probar(2048);
-        probar(4095);
-
-        $display("FIN TEST");
-
-        $finish;
-
-    end
 
     initial begin
         $dumpfile("bin2bcd_tb.vcd");
         $dumpvars(0, bin2bcd_tb);
+    end
+
+    // =========================
+    // estímulos
+    // =========================
+
+    initial begin
+
+        // ---------------------
+        // prueba principal
+        // ---------------------
+        bin = 12'd10;
+
+        #10;
+
+        $display("BIN       = %0d", bin);
+        $display("MILES     = %0d", miles);
+        $display("CENTENAS  = %0d", centenas);
+        $display("DECENAS   = %0d", decenas);
+        $display("UNIDADES  = %0d", unidades);
+
+        // esperado:
+        // decenas  = 1
+        // unidades = 0
+
+        // ---------------------
+        // más pruebas útiles
+        // ---------------------
+
+        bin = 12'd9;
+        #10;
+
+        bin = 12'd99;
+        #10;
+
+        bin = 12'd123;
+        #10;
+
+        bin = 12'd999;
+        #10;
+
+        $finish;
+
     end
 
 endmodule

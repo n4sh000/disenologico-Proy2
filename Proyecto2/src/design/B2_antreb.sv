@@ -23,26 +23,29 @@ always_ff @( posedge clk ) begin
     ff_b <= ff_a;
 end
 
-always_ff @( posedge clk ) begin
+
+
+always_ff @(posedge clk) begin
+
     if (cs_stbl) begin
-        ff_count <= ff_count + 1;
-    end
-    else if (fg_count) begin
-        ff_count <= '0;
+
+        if (!fg_count)
+            ff_count <= ff_count + 1'b1;
+
     end
     else begin
+
         ff_count <= '0;
+
     end
+
 end
 
-assign fg_count = (ff_count == NUM_CYCLES)? 1: 0;
+assign fg_count = (ff_count == NUM_CYCLES-1)? 1: 0;
 
 always_ff @( posedge clk ) begin
     if (fg_count) begin
         ff_c <= ff_b;
-    end
-    else begin
-        ff_c <= '0;
     end
 end
 

@@ -1,4 +1,4 @@
-module top (
+module top ( 
  
     input  logic clk,
     input  logic rst,
@@ -17,7 +17,9 @@ module top (
     // 1. SEÑALES INTERNAS
     // =========================================================
  
+    logic tecla_raw;
     logic tecla_valida;
+
     logic [3:0] tecla;
  
     logic [2:0] state;
@@ -43,7 +45,7 @@ module top (
     logic [3:0] hex;
  
     // =========================================================
-    // 2. TECLADO + ANTIRREBOTE
+    // 2. TECLADO
     // =========================================================
  
     B1_lector_teclado u_kbd (
@@ -51,16 +53,29 @@ module top (
         .rows(rows),
         .cols(cols),
         .tecla(tecla),
-        .tecla_raw(tecla_valida)
+        .tecla_raw(tecla_raw)
+    );
+
+    // =========================================================
+    // 3. ANTIRREBOTE
+    // =========================================================
+
+    B2_antreb #(
+        .NUM_CYCLES(10000)
+    ) u_antreb (
+        .clk(clk),
+        .btn(tecla_raw),
+        .cs_antreb(tecla_valida)
     );
  
     // =========================================================
-    // 3. FSM
+    // 4. FSM
     // =========================================================
  
     FSM_calculadora u_fsm (
         .clk(clk),
         .rst(rst),
+
         .tecla_valida(tecla_valida),
         .tecla(tecla),
  
@@ -73,12 +88,13 @@ module top (
     );
  
     // =========================================================
-    // 4. B3 - almacenamiento números
+    // 5. B3 - almacenamiento números
     // =========================================================
  
     B3_almacenar_numeros u_b3 (
         .clk(clk),
         .rst(rst),
+
         .tecla_valida(tecla_valida),
         .tecla(tecla),
  
@@ -95,7 +111,7 @@ module top (
     );
  
     // =========================================================
-    // 5. B4 - suma
+    // 6. B4 - suma
     // =========================================================
  
     B4_sumador u_b4 (
@@ -111,7 +127,7 @@ module top (
     );
  
     // =========================================================
-    // 6. BIN2BCD
+    // 7. BIN2BCD
     // =========================================================
  
     bin2bcd u_bcd (
@@ -124,7 +140,7 @@ module top (
     );
  
     // =========================================================
-    // 7. DISPLAY SELECTOR
+    // 8. DISPLAY SELECTOR
     // =========================================================
  
     display_selector u_sel (
@@ -142,7 +158,7 @@ module top (
     );
  
     // =========================================================
-    // 8. MULTIPLEXOR DISPLAY
+    // 9. MULTIPLEXOR DISPLAY
     // =========================================================
  
     disp_mux u_mux (
@@ -159,7 +175,7 @@ module top (
     );
  
     // =========================================================
-    // 9. DECODER 7 SEGMENTOS
+    // 10. DECODER 7 SEGMENTOS
     // =========================================================
  
     disp_decoder u_dec (
