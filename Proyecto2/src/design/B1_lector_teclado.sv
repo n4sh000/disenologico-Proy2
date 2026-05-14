@@ -1,0 +1,135 @@
+module B1_lector_teclado (
+    input  logic       clk,
+    input  logic [3:0] rows,
+
+    output logic [2:0] cols,
+    output logic [3:0] tecla,
+    output logic       tecla_raw
+);
+
+    // ================================
+    // Registros internos
+    // ================================
+    logic [24:0] contador = '0;
+    logic [1:0]  estado   = '0;
+
+    // ================================
+    // SCAN DE COLUMNAS
+    // ================================
+    always_ff @(posedge clk) begin
+
+        contador <= contador + 1'b1;
+
+        if (contador >= 25'd100_000) begin
+
+            contador <= '0;
+
+            if (estado == 2)
+                estado <= 0;
+            else
+                estado <= estado + 1'b1;
+
+        end
+
+    end
+
+    // ================================
+    // LECTURA DEL TECLADO
+    // ================================
+    always_comb begin
+
+        cols      = 3'b000;
+        tecla     = 4'h0;
+        tecla_raw = 1'b0;
+
+        case (estado)
+
+            // =========================
+            // COLUMNA 1
+            // =========================
+            0: begin
+
+                cols = 3'b001;
+
+                if (rows[0]) begin
+                    tecla     = 4'h1;
+                    tecla_raw = 1'b1;
+                end
+                else if (rows[1]) begin
+                    tecla     = 4'h4;
+                    tecla_raw = 1'b1;
+                end
+                else if (rows[2]) begin
+                    tecla     = 4'h7;
+                    tecla_raw = 1'b1;
+                end
+                else if (rows[3]) begin
+                    tecla     = 4'hA;
+                    tecla_raw = 1'b1;
+                end
+
+            end
+
+            // =========================
+            // COLUMNA 2
+            // =========================
+            1: begin
+
+                cols = 3'b010;
+
+                if (rows[0]) begin
+                    tecla     = 4'h2;
+                    tecla_raw = 1'b1;
+                end
+                else if (rows[1]) begin
+                    tecla     = 4'h5;
+                    tecla_raw = 1'b1;
+                end
+                else if (rows[2]) begin
+                    tecla     = 4'h8;
+                    tecla_raw = 1'b1;
+                end
+                else if (rows[3]) begin
+                    tecla     = 4'h0;
+                    tecla_raw = 1'b1;
+                end
+
+            end
+
+            // =========================
+            // COLUMNA 3
+            // =========================
+            2: begin
+
+                cols = 3'b100;
+
+                if (rows[0]) begin
+                    tecla     = 4'h3;
+                    tecla_raw = 1'b1;
+                end
+                else if (rows[1]) begin
+                    tecla     = 4'h6;
+                    tecla_raw = 1'b1;
+                end
+                else if (rows[2]) begin
+                    tecla     = 4'h9;
+                    tecla_raw = 1'b1;
+                end
+                else if (rows[3]) begin
+                    tecla     = 4'hB;
+                    tecla_raw = 1'b1;
+                end
+
+            end
+
+            default: begin
+                cols      = 3'b000;
+                tecla     = 4'h0;
+                tecla_raw = 1'b0;
+            end
+
+        endcase
+
+    end
+
+endmodule
