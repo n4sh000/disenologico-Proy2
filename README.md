@@ -201,7 +201,7 @@ principal del sistema. Opera de forma combinacional: cambia la salida en el mism
 ---
 
 # 6. Ejemplo y análisis de una simulación funcional del sistema completo.
-El testbench realizado se puede observar en [Testbench](disenologico-Proy2/Proyecto2/src/sim/top_tb.vs)
+El testbench realizado se puede observar en [Testbench](Proyecto2/src/sim/top_tb.sv)
 
 La simulación funcional del sistema completo se realizó utilizando un testbench que integró todos los módulos del diseño de la calculadora en FPGA, incluyendo el teclado matricial, la FSM de control, el sumador binario, el conversor bin2bcd y el sistema de display multiplexado. Se aplicó un reloj de 10 MHz y un reset inicial controlado, lo que permitió observar una inicialización estable del sistema sin comportamientos erráticos.
 
