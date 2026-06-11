@@ -41,7 +41,7 @@ module B3_almacenar_numeros (
             d0_2 <= 0; d1_2 <= 0; d2_2 <= 0;
         end
 
-        else if (load_digit && tecla_pulse && ((tecla != 4'hA) && (tecla != 4'hB))) begin
+        else if (load_digit && tecla_pulse && ((tecla != 4'hA) && (tecla != 4'hB) && (tecla != 4'hC) && (tecla != 4'hD) && (tecla != 4'hE) && (tecla != 4'hF))) begin
 
             // =====================
             // NUMERO 1
@@ -59,6 +59,28 @@ module B3_almacenar_numeros (
                 d2_2 <= d1_2;
                 d1_2 <= d0_2;
                 d0_2 <= tecla;
+            end
+
+        end
+
+        else if (load_digit && tecla_pulse && tecla == 4'hC) begin
+
+            // =====================
+            // NUMERO 1
+            // =====================
+            if (!sel_num) begin
+                d2_1 <= 0;
+                d1_1 <= d2_1;
+                d0_1 <= d1_1;
+            end
+
+            // =====================
+            // NUMERO 2
+            // =====================
+            else begin
+                d2_2 <= 0;
+                d1_2 <= d2_2;
+                d0_2 <= d1_2;
             end
 
         end

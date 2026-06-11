@@ -5,7 +5,7 @@ module top (
  
     // teclado
     input  logic [3:0] rows,
-    output logic [2:0] cols,
+    output logic [3:0] cols,
  
     // display físico
     output logic [3:0] digit,

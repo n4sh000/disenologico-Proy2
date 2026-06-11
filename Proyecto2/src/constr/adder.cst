@@ -1,3 +1,6 @@
+IO_LOC  "cols[3]" 39;
+IO_PORT "cols[3]" IO_TYPE=LVCMOS33;
+
 IO_LOC  "digit[3]" 57;
 IO_PORT "digit[3]" DRIVE=8 IO_TYPE=LVCMOS33;
 

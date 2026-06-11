@@ -23,7 +23,7 @@ module display_selector (
                 d0 = n1_d0;
                 d1 = n1_d1;
                 d2 = n1_d2;
-                d3 = 4'd1;
+                d3 = 0;
             end
 
             // =====================
@@ -33,7 +33,7 @@ module display_selector (
                 d0 = n2_d0;
                 d1 = n2_d1;
                 d2 = n2_d2;
-                d3 = 4'd2;
+                d3 = 0;
             end
 
             // =====================

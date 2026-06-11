@@ -4,7 +4,7 @@ module B1_lector_teclado #(
     input  logic       clk,
     input  logic [3:0] rows,
 
-    output logic [2:0] cols,
+    output logic [3:0] cols,
     output logic [3:0] tecla,
     output logic       tecla_raw
 );
@@ -29,7 +29,7 @@ module B1_lector_teclado #(
 
                 contador <= '0;
 
-                if (estado == 2)
+                if (estado == 3)
                     estado <= 0;
                 else
                     estado <= estado + 1'b1;
@@ -39,7 +39,6 @@ module B1_lector_teclado #(
         end
         else begin
 
-            // opcional pero recomendado
             contador <= '0;
 
         end
@@ -51,7 +50,7 @@ module B1_lector_teclado #(
     // ================================
     always_comb begin
 
-        cols      = 3'b000;
+        cols      = 4'b0000;
         tecla     = 4'h0;
         tecla_raw = 1'b0;
 
@@ -62,7 +61,7 @@ module B1_lector_teclado #(
             // =========================
             0: begin
 
-                cols = 3'b001;
+                cols = 4'b0001;
 
                 if (rows[0]) begin
                     tecla     = 4'h1;
@@ -88,7 +87,7 @@ module B1_lector_teclado #(
             // =========================
             1: begin
 
-                cols = 3'b010;
+                cols = 4'b0010;
 
                 if (rows[0]) begin
                     tecla     = 4'h2;
@@ -114,7 +113,7 @@ module B1_lector_teclado #(
             // =========================
             2: begin
 
-                cols = 3'b100;
+                cols = 4'b0100;
 
                 if (rows[0]) begin
                     tecla     = 4'h3;
@@ -135,8 +134,34 @@ module B1_lector_teclado #(
 
             end
 
+            // =========================
+            // COLUMNA 4
+            // =========================
+            3: begin
+
+                cols = 4'b1000;
+
+                if (rows[0]) begin
+                    tecla     = 4'hC;   // A
+                    tecla_raw = 1'b1;
+                end
+                else if (rows[1]) begin
+                    tecla     = 4'hD;   // B
+                    tecla_raw = 1'b1;
+                end
+                else if (rows[2]) begin
+                    tecla     = 4'hE;   // C
+                    tecla_raw = 1'b1;
+                end
+                else if (rows[3]) begin
+                    tecla     = 4'hF;   // D
+                    tecla_raw = 1'b1;
+                end
+
+            end
+
             default: begin
-                cols      = 3'b000;
+                cols      = 4'b0000;
                 tecla     = 4'h0;
                 tecla_raw = 1'b0;
             end
